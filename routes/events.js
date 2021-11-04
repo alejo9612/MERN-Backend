@@ -1,31 +1,50 @@
+/*
+    Event Routes
+    /api/events
+*/
 const { Router } = require('express');
 const { check } = require('express-validator');
-const { getEventos, crearEvento, actualizarEvento, eliminarEvento } = require('../controllers/events');
+
 const { isDate } = require('../helper/isDate');
 const { validarCampos } = require('../middlewares/validar-campos');
 const { validarJWT } = require('../middlewares/validar-jwt');
+const { getEventos, crearEvento,
+     actualizarEvento, eliminarEvento } = require('../controllers/events');
 
 const router = Router();
 
-//Validación de  token apra todas mis rutas
-router.use(validarJWT);
+// Todas tienes que pasar por la validación del JWT
+router.use( validarJWT );
 
-router.get('/', getEventos);
 
-router.post('/', [
-    check('title', 'El titulo es obligatorio').not().isEmpty(),
-    check('start', 'Fecha de inicio obligatoria').custom(isDate),
-    check('end', 'Fecha de finlización debe de ser obligatoria').custom(isDate),
-    validarCampos
-], crearEvento);
+// Obtener eventos 
+router.get('/', getEventos );
 
-router.put('/:id', [
-    check('title', 'El titulo es obligatorio').not().isEmpty(),
-    check('start', 'Fecha de inicio es obligatoria').custom(isDate),
-    check('end', 'Fecha de finalización es obligatoria').custom(isDate),
-    validarCampos
-], actualizarEvento);
+// Crear un nuevo evento
+router.post(
+    '/',
+    [
+        check('title','El titulo es obligatorio').not().isEmpty(),
+        check('start','Fecha de inicio es obligatoria').custom( isDate ),
+        check('end','Fecha de finalización es obligatoria').custom( isDate ),
+        validarCampos
+    ],
+    crearEvento 
+);
 
-router.delete('/:id', validarCampos, eliminarEvento);
+// Actualizar Evento
+router.put(
+    '/:id', 
+    [
+        check('title','El titulo es obligatorio').not().isEmpty(),
+        check('start','Fecha de inicio es obligatoria').custom( isDate ),
+        check('end','Fecha de finalización es obligatoria').custom( isDate ),
+        validarCampos
+    ],
+    actualizarEvento 
+);
+
+// Borrar evento
+router.delete('/:id', eliminarEvento );
 
 module.exports = router;

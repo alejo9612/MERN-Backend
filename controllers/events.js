@@ -1,68 +1,62 @@
-const { response } = require("express");
+const { response } = require('express');
 const Evento = require('../models/Evento');
 
-const getEventos = async(req, resp = response) => {
+const getEventos = async( req, res = response ) => {
 
     const eventos = await Evento.find()
-                                .populate('user','name');//con populate podemos hacer el filtro de que queremos del otro schema
+                                .populate('user','name');
 
-    resp.json({
+    res.json({
         ok: true,
         eventos
-    })
+    });
+}
 
-};
+const crearEvento = async ( req, res = response ) => {
 
-const crearEvento = async (req, resp = response) => {
-
-    const evento = new Evento(req.body);
+    const evento = new Evento( req.body );
 
     try {
 
         evento.user = req.uid;
+        
+        const eventoGuardado = await evento.save();
 
-        const evetoSave = await evento.save();
-
-        resp.json({
-            ok: false,
-            evento: evetoSave
+        res.json({
+            ok: true,
+            evento: eventoGuardado
         })
 
+
     } catch (error) {
-        console.log(error);
-        resp.status(500).json({
+        console.log(error)
+        res.status(500).json({
             ok: false,
-            msg: 'Hable con el administrador por favor'
+            msg: 'Hable con el administrador'
         });
     }
-
-    resp.json({
-        ok: true,
-        msg: 'crearEventos'
-    })
-
 }
 
-const actualizarEvento = async(req, resp = response) => {
-
+const actualizarEvento = async( req, res = response ) => {
+    
     const eventoId = req.params.id;
     const uid = req.uid;
 
     try {
 
-        const evento = await Evento.findById(eventoId);
+        const evento = await Evento.findById( eventoId );
 
-        if (!evento) {
-            resp.status(404).json({
-                ok:false,
-                msg:'Evento no exite por este id'
-            })
+        if ( !evento ) {
+            return res.status(404).json({
+                ok: false,
+                msg: 'Evento no existe por ese id'
+            });
         }
 
-        if (evento.user.toString() !== uid) {
-            return resp.status(400).json({
-                ok:false,
-                msg: 'No tiene privilegios para editar este evento'
+        if ( evento.user.toString() !== uid ) {
+            return res.status(401).json({
+                ok: false,
+                msg: 'No tiene privilegio de editar este evento'
             });
         }
 
@@ -71,23 +65,25 @@ const actualizarEvento = async(req, resp = response) => {
             user: uid
         }
 
-        const eventoActualizado = await Evento.findByIdAndUpdate(eventoId, nuevoEvento, {new: true});
+        const eventoActualizado = await Evento.findByIdAndUpdate( eventoId, nuevoEvento, { new: true } );
 
-        resp.json({
+        res.json({
             ok: true,
             evento: eventoActualizado
-        })
+        });
+
         
     } catch (error) {
         console.log(error);
-        resp.status(500).json({
-            ok:false,
-            msg:'Hable con el administrador'
-        })
+        res.status(500).json({
+            ok: false,
+            msg: 'Hable con el administrador'
+        });
     }
-};
 
-const eliminarEvento = (req, resp = response) => {
+}
+
+const eliminarEvento = async( req, res = response ) => {
 
     const eventoId = req.params.id;
     const uid = req.uid;
@@ -124,8 +120,8 @@ const eliminarEvento = (req, resp = response) => {
         });
     }
 
-
 }
+
 
 module.exports = {
     getEventos,
